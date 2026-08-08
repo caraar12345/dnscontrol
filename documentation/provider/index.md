@@ -86,6 +86,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ✅ | ❌ |
 | [`SCALEWAY`](scaleway.md) | ❌ | ✅ | ❌ |
 | [`SOFTLAYER`](softlayer.md) | ❌ | ✅ | ❌ |
+| [`TECHNITIUM`](technitium.md) | ❌ | ✅ | ❌ |
 | [`TENCENTDNS`](tencentdns.md) | ❌ | ✅ | ✅ |
 | [`TRANSIP`](transip.md) | ❌ | ✅ | ❌ |
 | [`UNIFI`](unifi.md) | ❌ | ✅ | ❌ |
@@ -161,6 +162,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ❔ | ❌ | ✅ | ✅ |
 | [`SCALEWAY`](scaleway.md) | ❔ | ❌ | ❌ | ✅ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ |
+| [`TECHNITIUM`](technitium.md) | ❔ | ✅ | ✅ | ✅ |
 | [`TENCENTDNS`](tencentdns.md) | ❔ | ✅ | ✅ | ✅ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ✅ |
 | [`UNIFI`](unifi.md) | ❌ | ❔ | ❌ | ❌ |
@@ -231,6 +233,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ✅ | ❌ | ❌ | ✅ | ❌ |
 | [`SCALEWAY`](scaleway.md) | ✅ | ✅ | ❌ | ✅ | ❌ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ❌ | ❔ | ❔ |
+| [`TECHNITIUM`](technitium.md) | ✅ | ✅ | ❌ | ✅ | ❌ |
 | [`TENCENTDNS`](tencentdns.md) | ✅ | ❔ | ❔ | ✅ | ❔ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | [`UNIFI`](unifi.md) | ❌ | ❔ | ❌ | ❌ | ❔ |
@@ -300,6 +303,7 @@ Jump to a table:
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ✅ | ✅ |
 | [`SCALEWAY`](scaleway.md) | ❌ | ✅ | ✅ | ✅ |
 | [`SOFTLAYER`](softlayer.md) | ❔ | ❔ | ✅ | ❔ |
+| [`TECHNITIUM`](technitium.md) | ❌ | ✅ | ✅ | ✅ |
 | [`TENCENTDNS`](tencentdns.md) | ❔ | ❔ | ✅ | ❔ |
 | [`TRANSIP`](transip.md) | ❌ | ✅ | ✅ | ❌ |
 | [`UNIFI`](unifi.md) | ❔ | ❔ | ✅ | ❔ |
@@ -365,6 +369,7 @@ Jump to a table:
 | [`RWTH`](rwth.md) | ✅ | ❔ | ❔ | ✅ | ❌ |
 | [`SAKURACLOUD`](sakuracloud.md) | ✅ | ✅ | ❔ | ❌ | ❌ |
 | [`SCALEWAY`](scaleway.md) | ✅ | ✅ | ❔ | ✅ | ✅ |
+| [`TECHNITIUM`](technitium.md) | ✅ | ✅ | ❌ | ✅ | ✅ |
 | [`TENCENTDNS`](tencentdns.md) | ✅ | ❔ | ❔ | ❔ | ❔ |
 | [`TRANSIP`](transip.md) | ✅ | ❌ | ❔ | ✅ | ✅ |
 | [`UNIFI`](unifi.md) | ❌ | ❔ | ❔ | ❌ | ❌ |
@@ -416,6 +421,7 @@ Jump to a table:
 | [`REALTIMEREGISTER`](realtimeregister.md) | ✅ | ❔ | ❌ |
 | [`SAKURACLOUD`](sakuracloud.md) | ❌ | ❌ | ❌ |
 | [`SCALEWAY`](scaleway.md) | ❌ | ❔ | ❌ |
+| [`TECHNITIUM`](technitium.md) | ❔ | ❌ | ✅ |
 | [`TRANSIP`](transip.md) | ❌ | ❌ | ❌ |
 | [`VERCEL`](vercel.md) | ❌ | ❌ | ❌ |
 | [`WEBSUPPORT`](websupport.md) | ❔ | ❔ | ❌ |
@@ -511,6 +517,7 @@ Providers in this category and their maintainers are:
 | [`SAKURACLOUD`](sakuracloud.md) | @ttkzw |
 | [`SCALEWAY`](scaleway.md) | @alessiopcc |
 | [`SOFTLAYER`](softlayer.md) | @jamielennox |
+| [`TECHNITIUM`](technitium.md) | @caraar12345 |
 | [`TENCENTDNS`](tencentdns.md) | @cylonchau |
 | [`TRANSIP`](transip.md) | @blackshadev |
 |[`VERCEL`](vercel.md)|@SukkaW|

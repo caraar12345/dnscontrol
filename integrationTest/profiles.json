@@ -400,6 +400,12 @@
     "domain": "$SL_DOMAIN",
     "username": "$SL_USERNAME"
   },
+  "TECHNITIUM": {
+    "TYPE": "TECHNITIUM",
+    "api_token": "$TECHNITIUM_API_TOKEN",
+    "api_url": "$TECHNITIUM_API_URL",
+    "domain": "$TECHNITIUM_DOMAIN"
+  },
   "TENCENTDNS": {
     "TYPE": "TENCENTDNS",
     "domain": "$TENCENTDNS_DOMAIN",

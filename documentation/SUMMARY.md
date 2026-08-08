@@ -185,6 +185,7 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [Scaleway](provider/scaleway.md)
 * [SoftLayer DNS](provider/softlayer.md)
+* [Technitium DNS Server](provider/technitium.md)
 * [TransIP](provider/transip.md)
 * [UniFi Network](provider/unifi.md)
 * [Vercel](provider/vercel.md)
