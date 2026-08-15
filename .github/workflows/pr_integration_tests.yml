@@ -406,11 +406,6 @@ jobs:
       SAKURACLOUD_ACCESS_TOKEN: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN }}
       SAKURACLOUD_ACCESS_TOKEN_SECRET: ${{ secrets.SAKURACLOUD_ACCESS_TOKEN_SECRET }}
       #
-<<<<<<< HEAD
-      TECHNITIUM_API_URL: ${{ secrets.TECHNITIUM_API_URL }}
-      TECHNITIUM_API_TOKEN: ${{ secrets.TECHNITIUM_API_TOKEN }}
-      #
-=======
       SCALEWAY_ACCESS_KEY: ${{ secrets.SCALEWAY_ACCESS_KEY }}
       SCALEWAY_PROJECT_ID: ${{ secrets.SCALEWAY_PROJECT_ID }}
       SCALEWAY_SECRET_KEY: ${{ secrets.SCALEWAY_SECRET_KEY }}
@@ -418,12 +413,14 @@ jobs:
       SL_API_KEY: ${{ secrets.SL_API_KEY }}
       SL_USERNAME: ${{ secrets.SL_USERNAME }}
       #
+      TECHNITIUM_API_URL: ${{ secrets.TECHNITIUM_API_URL }}
+      TECHNITIUM_API_TOKEN: ${{ secrets.TECHNITIUM_API_TOKEN }}
+      #
       TENCENTDNS_SECRET_ID: ${{ secrets.TENCENTDNS_SECRET_ID }}
       TENCENTDNS_SECRET_KEY: ${{ secrets.TENCENTDNS_SECRET_KEY }}
       TENCENTDNS_SITE: ${{ secrets.TENCENTDNS_SITE }}
       #
       TRANSIP_ACCESS_TOKEN: ${{ secrets.TRANSIP_ACCESS_TOKEN }}
->>>>>>> upstream
       TRANSIP_ACCOUNT_NAME: ${{ secrets.TRANSIP_ACCOUNT_NAME }}
       TRANSIP_PRIVATE_KEY: ${{ secrets.TRANSIP_PRIVATE_KEY }}
       #
