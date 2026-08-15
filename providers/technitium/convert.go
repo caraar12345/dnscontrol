@@ -10,6 +10,32 @@ import (
 	"github.com/DNSControl/dnscontrol/v4/models"
 )
 
+// toFQDN turns a hostname Technitium returned into an absolute name (trailing
+// dot). Technitium's API always returns an already-fully-qualified hostname
+// but omits the trailing dot; DNSControl's CanonicalizeTargets() runs over
+// every provider's GetZoneRecords() result and uses the trailing dot as the
+// only signal that a hostname is already absolute; a dotless value is
+// (wrongly, here) treated as a shortname and has the zone's origin appended
+// to it a second time. See dnsutil.AddOrigin() and models.CanonicalizeTargets().
+func toFQDN(name string) string {
+	if name == "" || strings.HasSuffix(name, ".") {
+		return name
+	}
+	return name + "."
+}
+
+// fromFQDN is the reverse of toFQDN: by the time a correction is built,
+// CanonicalizeTargets() has made every hostname target absolute (trailing
+// dot), but Technitium's own API never includes one, so it is stripped again
+// before the value is sent back. The bare root "." (used by NAPTR to mean
+// "no replacement") is left alone: it is the whole name, not a suffix to trim.
+func fromFQDN(name string) string {
+	if name == "." {
+		return name
+	}
+	return strings.TrimSuffix(name, ".")
+}
+
 // toRecordConfig converts one record of a GET /api/zones/records/get
 // response to a RecordConfig. rec.Name is the record's FQDN, not a name
 // relative to the zone.
@@ -38,7 +64,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTarget(d.NameServer)
+		return rc, rc.SetTarget(toFQDN(d.NameServer))
 
 	case "CNAME":
 		var d struct {
@@ -47,7 +73,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTarget(d.CName)
+		return rc, rc.SetTarget(toFQDN(d.CName))
 
 	case "PTR":
 		var d struct {
@@ -56,7 +82,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTarget(d.PtrName)
+		return rc, rc.SetTarget(toFQDN(d.PtrName))
 
 	case "DNAME":
 		var d struct {
@@ -65,7 +91,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTarget(d.DName)
+		return rc, rc.SetTarget(toFQDN(d.DName))
 
 	// ANAME is Technitium's proprietary equivalent of DNSControl's ALIAS. The
 	// type is left as "ANAME": GetZoneRecordsCorrections renames the desired
@@ -78,7 +104,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTarget(d.AName)
+		return rc, rc.SetTarget(toFQDN(d.AName))
 
 	case "MX":
 		var d struct {
@@ -88,7 +114,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTargetMX(d.Preference, d.Exchange)
+		return rc, rc.SetTargetMX(d.Preference, toFQDN(d.Exchange))
 
 	case "TXT":
 		var d struct {
@@ -109,7 +135,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTargetSRV(d.Priority, d.Weight, d.Port, d.Target)
+		return rc, rc.SetTargetSRV(d.Priority, d.Weight, d.Port, toFQDN(d.Target))
 
 	case "CAA":
 		var d struct {
@@ -134,7 +160,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		if err := json.Unmarshal(rec.RData, &d); err != nil {
 			return nil, err
 		}
-		return rc, rc.SetTargetNAPTR(d.Order, d.Preference, d.Flags, d.Services, d.Regexp, d.Replacement)
+		return rc, rc.SetTargetNAPTR(d.Order, d.Preference, d.Flags, d.Services, d.Regexp, toFQDN(d.Replacement))
 
 	case "SVCB", "HTTPS":
 		var d struct {
@@ -147,7 +173,7 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		}
 		rc.SvcPriority = d.SvcPriority
 		rc.SvcParams = svcParamsFromTechnitium(d.SvcParams)
-		return rc, rc.SetTarget(d.SvcTargetName)
+		return rc, rc.SetTarget(toFQDN(d.SvcTargetName))
 
 	case "TLSA":
 		var d struct {
@@ -229,22 +255,22 @@ func currentParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("ipAddress", rc.GetTargetField())
 
 	case "NS":
-		v.Set("nameServer", rc.GetTargetField())
+		v.Set("nameServer", fromFQDN(rc.GetTargetField()))
 
 	case "CNAME":
-		v.Set("cname", rc.GetTargetField())
+		v.Set("cname", fromFQDN(rc.GetTargetField()))
 
 	case "PTR":
-		v.Set("ptrName", rc.GetTargetField())
+		v.Set("ptrName", fromFQDN(rc.GetTargetField()))
 
 	case "DNAME":
-		v.Set("dname", rc.GetTargetField())
+		v.Set("dname", fromFQDN(rc.GetTargetField()))
 
 	case "ANAME":
-		v.Set("aname", rc.GetTargetField())
+		v.Set("aname", fromFQDN(rc.GetTargetField()))
 
 	case "MX":
-		v.Set("exchange", rc.GetTargetField())
+		v.Set("exchange", fromFQDN(rc.GetTargetField()))
 		v.Set("preference", strconv.Itoa(int(rc.MxPreference)))
 
 	case "TXT":
@@ -254,7 +280,7 @@ func currentParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("priority", strconv.Itoa(int(rc.SrvPriority)))
 		v.Set("weight", strconv.Itoa(int(rc.SrvWeight)))
 		v.Set("port", strconv.Itoa(int(rc.SrvPort)))
-		v.Set("target", rc.GetTargetField())
+		v.Set("target", fromFQDN(rc.GetTargetField()))
 
 	case "CAA":
 		v.Set("flags", strconv.Itoa(int(rc.CaaFlag)))
@@ -267,11 +293,11 @@ func currentParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("naptrFlags", rc.NaptrFlags)
 		v.Set("naptrServices", rc.NaptrService)
 		v.Set("naptrRegexp", rc.NaptrRegexp)
-		v.Set("naptrReplacement", rc.GetTargetField())
+		v.Set("naptrReplacement", fromFQDN(rc.GetTargetField()))
 
 	case "SVCB", "HTTPS":
 		v.Set("svcPriority", strconv.Itoa(int(rc.SvcPriority)))
-		v.Set("svcTargetName", rc.GetTargetField())
+		v.Set("svcTargetName", fromFQDN(rc.GetTargetField()))
 		v.Set("svcParams", svcParamsToTechnitium(rc.SvcParams))
 
 	case "TLSA":
@@ -343,16 +369,16 @@ func newValueParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("newIpAddress", rc.GetTargetField())
 
 	case "NS":
-		v.Set("newNameServer", rc.GetTargetField())
+		v.Set("newNameServer", fromFQDN(rc.GetTargetField()))
 
 	case "PTR":
-		v.Set("newPtrName", rc.GetTargetField())
+		v.Set("newPtrName", fromFQDN(rc.GetTargetField()))
 
 	case "ANAME":
-		v.Set("newAName", rc.GetTargetField())
+		v.Set("newAName", fromFQDN(rc.GetTargetField()))
 
 	case "MX":
-		v.Set("newExchange", rc.GetTargetField())
+		v.Set("newExchange", fromFQDN(rc.GetTargetField()))
 		v.Set("newPreference", strconv.Itoa(int(rc.MxPreference)))
 
 	case "TXT":
@@ -362,7 +388,7 @@ func newValueParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("newPriority", strconv.Itoa(int(rc.SrvPriority)))
 		v.Set("newWeight", strconv.Itoa(int(rc.SrvWeight)))
 		v.Set("newPort", strconv.Itoa(int(rc.SrvPort)))
-		v.Set("newTarget", rc.GetTargetField())
+		v.Set("newTarget", fromFQDN(rc.GetTargetField()))
 
 	case "CAA":
 		v.Set("newFlags", strconv.Itoa(int(rc.CaaFlag)))
@@ -375,11 +401,11 @@ func newValueParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("naptrNewFlags", rc.NaptrFlags)
 		v.Set("naptrNewServices", rc.NaptrService)
 		v.Set("naptrNewRegexp", rc.NaptrRegexp)
-		v.Set("naptrNewReplacement", rc.GetTargetField())
+		v.Set("naptrNewReplacement", fromFQDN(rc.GetTargetField()))
 
 	case "SVCB", "HTTPS":
 		v.Set("newSvcPriority", strconv.Itoa(int(rc.SvcPriority)))
-		v.Set("newSvcTargetName", rc.GetTargetField())
+		v.Set("newSvcTargetName", fromFQDN(rc.GetTargetField()))
 		v.Set("newSvcParams", svcParamsToTechnitium(rc.SvcParams))
 
 	case "TLSA":

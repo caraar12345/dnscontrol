@@ -23,24 +23,49 @@ func TestRecordRoundTrip(t *testing.T) {
 			stored: apiRecord{Name: "www.example.com", Type: "A", TTL: 300, RData: []byte(`{"ipAddress":"203.0.113.10"}`)},
 		},
 		{
-			name:   "CNAME",
+			// Technitium's API always returns an already-absolute hostname but
+			// omits the trailing dot. DNSControl's CanonicalizeTargets() (run by
+			// the framework on every provider's GetZoneRecords() result, outside
+			// this package) uses the trailing dot as its only signal that a
+			// hostname is already absolute, so a value read back verbatim would
+			// have the zone's origin appended to it a second time - this is what
+			// toRecordConfig's toFQDN() calls guard against, and what
+			// currentParams' matching fromFQDN() calls undo again on the way out.
+			name:   "CNAME becomes absolute on read and loses the dot again on write",
 			stored: apiRecord{Name: "alias.example.com", Type: "CNAME", TTL: 300, RData: []byte(`{"cname":"www.example.net"}`)},
+			verify: func(t *testing.T, rc *models.RecordConfig, params url.Values) {
+				if rc.GetTargetField() != "www.example.net." {
+					t.Errorf("target = %q, want the absolute name www.example.net.", rc.GetTargetField())
+				}
+				if params.Get("cname") != "www.example.net" {
+					t.Errorf("cname = %q, want the dotless www.example.net Technitium itself uses", params.Get("cname"))
+				}
+			},
 		},
 		{
-			name:   "MX splits off the preference",
+			name:   "MX splits off the preference and fixes up the exchange's dot",
 			stored: apiRecord{Name: "example.com", Type: "MX", TTL: 300, RData: []byte(`{"exchange":"mail.example.net","preference":10}`)},
 			verify: func(t *testing.T, rc *models.RecordConfig, params url.Values) {
 				if params.Get("preference") != "10" {
 					t.Errorf("preference = %q, want 10", params.Get("preference"))
 				}
+				if rc.GetTargetField() != "mail.example.net." {
+					t.Errorf("target = %q, want the absolute name mail.example.net.", rc.GetTargetField())
+				}
+				if params.Get("exchange") != "mail.example.net" {
+					t.Errorf("exchange = %q, want the dotless mail.example.net Technitium itself uses", params.Get("exchange"))
+				}
 			},
 		},
 		{
-			name:   "SRV splits off priority, weight and port",
+			name:   "SRV splits off priority, weight and port, and fixes up the target's dot",
 			stored: apiRecord{Name: "_sip._tcp.example.com", Type: "SRV", TTL: 300, RData: []byte(`{"priority":10,"weight":60,"port":5060,"target":"sip.example.net"}`)},
 			verify: func(t *testing.T, rc *models.RecordConfig, params url.Values) {
 				if params.Get("priority") != "10" || params.Get("weight") != "60" || params.Get("port") != "5060" {
 					t.Errorf("srv fields = %v", params)
+				}
+				if params.Get("target") != "sip.example.net" {
+					t.Errorf("target = %q, want the dotless sip.example.net Technitium itself uses", params.Get("target"))
 				}
 			},
 		},
@@ -92,6 +117,22 @@ func TestRecordRoundTrip(t *testing.T) {
 			verify: func(t *testing.T, rc *models.RecordConfig, params url.Values) {
 				if params.Get("naptrServices") != "E2U+sip" {
 					t.Errorf("naptrServices = %q, want E2U+sip", params.Get("naptrServices"))
+				}
+				// "." is the whole (root) name, not a dot to strip.
+				if params.Get("naptrReplacement") != "." {
+					t.Errorf("naptrReplacement = %q, want the bare root \".\"", params.Get("naptrReplacement"))
+				}
+			},
+		},
+		{
+			name:   "NAPTR with a real replacement fixes up its dot",
+			stored: apiRecord{Name: "example.com", Type: "NAPTR", TTL: 300, RData: []byte(`{"naptrOrder":100,"naptrPreference":10,"naptrFlags":"","naptrServices":"","naptrRegexp":"","naptrReplacement":"next.example.com"}`)},
+			verify: func(t *testing.T, rc *models.RecordConfig, params url.Values) {
+				if rc.GetTargetField() != "next.example.com." {
+					t.Errorf("target = %q, want the absolute name next.example.com.", rc.GetTargetField())
+				}
+				if params.Get("naptrReplacement") != "next.example.com" {
+					t.Errorf("naptrReplacement = %q, want the dotless next.example.com Technitium itself uses", params.Get("naptrReplacement"))
 				}
 			},
 		},
@@ -165,8 +206,10 @@ func TestUpdateParamsCnameHasNoCurrentField(t *testing.T) {
 	if err != nil {
 		t.Fatalf("updateParams() error = %v", err)
 	}
-	if got := params.Get("cname"); got != "new.example.net." {
-		t.Errorf("cname = %q, want %q", got, "new.example.net.")
+	// The dot is DNSControl's own absolute-name convention; Technitium's API
+	// never uses one, so it must not appear in the outgoing param.
+	if got := params.Get("cname"); got != "new.example.net" {
+		t.Errorf("cname = %q, want %q", got, "new.example.net")
 	}
 	if params.Has("newCname") {
 		t.Errorf("update params should not carry a newCname field: %v", params)
