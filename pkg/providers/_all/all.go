@@ -67,6 +67,7 @@ import (
 	_ "github.com/DNSControl/dnscontrol/v4/providers/sakuracloud"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/scaleway"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/softlayer"
+	_ "github.com/DNSControl/dnscontrol/v4/providers/technitium"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/tencentdns"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/transip"
 	_ "github.com/DNSControl/dnscontrol/v4/providers/unifi"

@@ -106,6 +106,8 @@
             * [MIKROTIK_NXDOMAIN](language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md)
         * PowerDNS
             * [LUA](language-reference/domain-modifiers/LUA.md)
+        * Technitium DNS Server
+            * [TECHNITIUM_APP](language-reference/domain-modifiers/TECHNITIUM_APP.md)
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific
@@ -185,6 +187,7 @@
 * [Sakura Cloud](provider/sakuracloud.md)
 * [Scaleway](provider/scaleway.md)
 * [SoftLayer DNS](provider/softlayer.md)
+* [Technitium DNS Server](provider/technitium.md)
 * [TransIP](provider/transip.md)
 * [UniFi Network](provider/unifi.md)
 * [Vercel](provider/vercel.md)

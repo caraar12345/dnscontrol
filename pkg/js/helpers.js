@@ -1604,6 +1604,24 @@ var MIKROTIK_NXDOMAIN = recordBuilder('MIKROTIK_NXDOMAIN', {
 // Use in the synthetic zone "_forwarders.mikrotik".
 var MIKROTIK_FORWARDER = recordBuilder('MIKROTIK_FORWARDER');
 
+// TECHNITIUM_APP(name, appName, classPath, recordData, modifiers...)
+// Technitium DNS App record, e.g. for the Split Horizon app. Technitium
+// calls this record type APP.
+var TECHNITIUM_APP = recordBuilder('TECHNITIUM_APP', {
+    args: [
+        ['name', _.isString],
+        ['appName', _.isString],
+        ['classPath', _.isString],
+        ['recordData', _.isString],
+    ],
+    transform: function (record, args, modifiers) {
+        record.name = args.name;
+        record.target = args.appName;
+        record.meta.classPath = args.classPath;
+        record.meta.recordData = args.recordData;
+    },
+});
+
 var BUNNY_DNS_PZ = recordBuilder('BUNNY_DNS_PZ', {
     args: [['name', _.isString], ['pullZoneId']],
     transform: function (record, args, modifiers) {

@@ -3660,6 +3660,30 @@ declare function SSHFP(name: string, algorithm: 0 | 1 | 2 | 3 | 4, type: 0 | 1 |
 declare function SVCB(name: string, priority: number, target: string, params: string, ...modifiers: RecordModifier[]): DomainModifier;
 
 /**
+ * `TECHNITIUM_APP` creates a Technitium DNS App record, which hands a query off to an installed
+ * [DNS app](https://blog.technitium.com/2021/03/creating-and-running-dns-apps-on.html) - for example,
+ * the Split Horizon app included with Technitium - instead of answering it directly. Technitium calls
+ * this record type `APP`. Only the [Technitium provider](../provider/technitium.md) supports it.
+ *
+ * `appName` is the name of the installed app. `classPath` selects the app's DNS App record handler
+ * class. `recordData` is the app-specific configuration, usually a JSON string; its format is defined
+ * by the app itself.
+ *
+ * ```javascript
+ * D("example.com", REG_MY_PROVIDER, DnsProvider(DSP_TECHNITIUM),
+ *   // Answer "host.example.com" differently depending on the querying client's network.
+ *   TECHNITIUM_APP("host", "Split Horizon", "SplitHorizon.SimpleAddress", JSON.stringify({
+ *     "192.168.1.0/24": ["192.168.1.10"],
+ *     "0.0.0.0/0": ["203.0.113.10"],
+ *   })),
+ * );
+ * ```
+ *
+ * @see https://docs.dnscontrol.org/language-reference/domain-modifiers/technitium_app
+ */
+declare function TECHNITIUM_APP(name: string, appName: string, classPath: string, recordData: string, ...modifiers: RecordModifier[]): DomainModifier;
+
+/**
  * `TLSA` adds a [TLSA certificate association record](https://www.rfc-editor.org/rfc/rfc6698) to a domain. The name should be the relative label for the record.
  *
  * Usage, selector, and type are ints.
