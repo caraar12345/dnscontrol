@@ -106,6 +106,8 @@
             * [MIKROTIK_NXDOMAIN](language-reference/domain-modifiers/MIKROTIK_NXDOMAIN.md)
         * PowerDNS
             * [LUA](language-reference/domain-modifiers/LUA.md)
+        * Technitium DNS Server
+            * [TECHNITIUM_APP](language-reference/domain-modifiers/TECHNITIUM_APP.md)
 * Record Modifiers
     * [TTL](language-reference/record-modifiers/TTL.md)
     * Service Provider specific

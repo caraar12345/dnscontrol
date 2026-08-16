@@ -238,6 +238,25 @@ func toRecordConfig(rec apiRecord, origin string) (*models.RecordConfig, error) 
 		}
 		return rc, rc.SetTargetSSHFP(algorithm, fingerprintType, d.Fingerprint)
 
+	// APP hands the query off to an installed DNS app. appName is stored as
+	// the target; classPath and the app-specific recordData have no
+	// RecordConfig field of their own, so they travel in Metadata. See the
+	// package doc comment in technitiumProvider.go.
+	case "APP":
+		var d struct {
+			AppName   string `json:"appName"`
+			ClassPath string `json:"classPath"`
+			Data      string `json:"data"`
+		}
+		if err := json.Unmarshal(rec.RData, &d); err != nil {
+			return nil, err
+		}
+		rc.Metadata = map[string]string{
+			"classPath":  d.ClassPath,
+			"recordData": d.Data,
+		}
+		return rc, rc.SetTarget(d.AppName)
+
 	default:
 		return nil, fmt.Errorf("unsupported record type %q", rec.Type)
 	}
@@ -345,6 +364,11 @@ func currentParams(rc *models.RecordConfig) (url.Values, error) {
 		v.Set("sshfpFingerprintType", fingerprintType)
 		v.Set("sshfpFingerprint", rc.GetTargetField())
 
+	case "APP":
+		v.Set("appName", rc.GetTargetField())
+		v.Set("classPath", rc.Metadata["classPath"])
+		v.Set("recordData", rc.Metadata["recordData"])
+
 	default:
 		return nil, fmt.Errorf("unsupported record type %q", rc.Type)
 	}
@@ -353,10 +377,10 @@ func currentParams(rc *models.RecordConfig) (url.Values, error) {
 }
 
 // newValueParams returns the "new"-prefixed query parameters Update uses to
-// carry the values a record is changing to. CNAME and DNAME are not included:
-// a label can hold only one of either, so Update identifies the record by
-// domain and type alone and currentParams already carries the (only) field
-// as the value to set.
+// carry the values a record is changing to. CNAME, DNAME, and APP are not
+// included: a label can hold only one of any of these, so Update identifies
+// the record by domain and type alone and currentParams already carries the
+// (only) field(s) as the value(s) to set.
 //
 // NAPTR's new-value fields are named naptrNew* rather than newNaptr*, and
 // ANAME's is newAName rather than newAname; both are exactly as documented in
@@ -465,10 +489,11 @@ func newValueParams(rc *models.RecordConfig) (url.Values, error) {
 // fields for new. Both records share the same label and type - see the
 // comment on diff2.ByRecord's CHANGE semantics in records.go.
 func updateParams(old, current *models.RecordConfig) (url.Values, error) {
-	if current.Type == "CNAME" || current.Type == "DNAME" {
+	if current.Type == "CNAME" || current.Type == "DNAME" || current.Type == "APP" {
 		// Only one value can exist at the label, so Technitium identifies the
-		// record by domain and type alone; the single field doubles as the new
-		// value to set.
+		// record by domain and type alone; the current fields double as the new
+		// values to set. Technitium's update API doesn't even define
+		// "new"-prefixed fields for APP - see WebServiceZonesApi.UpdateRecord.
 		return currentParams(current)
 	}
 

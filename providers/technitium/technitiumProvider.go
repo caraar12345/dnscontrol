@@ -41,6 +41,17 @@ written through the records API, so they are left out of the zone contents.
 Unlike some hosted DNS providers, Technitium does not manage the zone's own
 NS records for you: it is a full authoritative server, so the apex NS set is
 just like any other record set and is managed normally.
+
+Technitium's proprietary APP record type hands a query off to an installed
+DNS app (e.g. the Split Horizon app) instead of answering it directly. It has
+no DNSControl equivalent, so it is exposed as the provider-specific
+TECHNITIUM_APP(name, appName, classPath, recordData) pseudo-type: appName
+becomes the record's target and classPath/recordData are carried in the
+record's metadata. GetZoneRecordsCorrections renames the desired side to
+"APP" (Technitium's wire name) before diffing, matching the ALIAS/ANAME
+pattern above; toRecordConfig does the same on the existing side. Only one
+APP record can exist per label, so it is compared and updated like CNAME and
+DNAME (see updateParams in convert.go).
 */
 
 var features = providers.DocumentationNotes{
@@ -85,6 +96,7 @@ func init() {
 		Initializer:   newTechnitium,
 		RecordAuditor: AuditRecords,
 	}
+	providers.RegisterCustomRecordType("TECHNITIUM_APP", providerName, "")
 	providers.RegisterDomainServiceProviderType(providerName, fns, features)
 	providers.RegisterMaintainer(providerName, providerMaintainer)
 	providers.RegisterDefaultTTL(providerName, defaultTTL)

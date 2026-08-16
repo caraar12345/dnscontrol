@@ -166,6 +166,24 @@ func TestRecordRoundTrip(t *testing.T) {
 				}
 			},
 		},
+		{
+			name:   "APP puts classPath and recordData in Metadata",
+			stored: apiRecord{Name: "host.example.com", Type: "APP", TTL: 300, RData: []byte(`{"appName":"Split Horizon","classPath":"SplitHorizon.SimpleAddress","data":"{\"0.0.0.0/0\":[\"203.0.113.10\"]}"}`)},
+			verify: func(t *testing.T, rc *models.RecordConfig, params url.Values) {
+				if rc.GetTargetField() != "Split Horizon" {
+					t.Errorf("target = %q, want the app name %q", rc.GetTargetField(), "Split Horizon")
+				}
+				if rc.Metadata["classPath"] != "SplitHorizon.SimpleAddress" {
+					t.Errorf("classPath = %q, want SplitHorizon.SimpleAddress", rc.Metadata["classPath"])
+				}
+				if rc.Metadata["recordData"] != `{"0.0.0.0/0":["203.0.113.10"]}` {
+					t.Errorf("recordData = %q, want the app's JSON config", rc.Metadata["recordData"])
+				}
+				if params.Get("appName") != "Split Horizon" || params.Get("classPath") != "SplitHorizon.SimpleAddress" {
+					t.Errorf("app fields = %v", params)
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -213,6 +231,34 @@ func TestUpdateParamsCnameHasNoCurrentField(t *testing.T) {
 	}
 	if params.Has("newCname") {
 		t.Errorf("update params should not carry a newCname field: %v", params)
+	}
+}
+
+func TestUpdateParamsAppHasNoNewFields(t *testing.T) {
+	old := &models.RecordConfig{Type: "APP", TTL: 300, Metadata: map[string]string{"classPath": "SplitHorizon.SimpleAddress", "recordData": `{"0.0.0.0/0":["203.0.113.10"]}`}}
+	old.SetLabel("host", testOrigin)
+	if err := old.SetTarget("Split Horizon"); err != nil {
+		t.Fatalf("SetTarget() error = %v", err)
+	}
+
+	current := &models.RecordConfig{Type: "APP", TTL: 300, Metadata: map[string]string{"classPath": "SplitHorizon.SimpleAddress", "recordData": `{"0.0.0.0/0":["203.0.113.20"]}`}}
+	current.SetLabel("host", testOrigin)
+	if err := current.SetTarget("Split Horizon"); err != nil {
+		t.Fatalf("SetTarget() error = %v", err)
+	}
+
+	params, err := updateParams(old, current)
+	if err != nil {
+		t.Fatalf("updateParams() error = %v", err)
+	}
+	// Technitium's update API doesn't define "new"-prefixed fields for APP;
+	// the current fields double as the new values (see WebServiceZonesApi's
+	// UpdateRecord for the APP case).
+	if got := params.Get("recordData"); got != `{"0.0.0.0/0":["203.0.113.20"]}` {
+		t.Errorf("recordData = %q, want the new value", got)
+	}
+	if params.Has("newRecordData") {
+		t.Errorf("update params should not carry a newRecordData field: %v", params)
 	}
 }
 

@@ -47,17 +47,21 @@ func (c *technitiumProvider) GetZoneRecords(dc *models.DomainConfig) (models.Rec
 
 // GetZoneRecordsCorrections returns a list of corrections that will turn existing records into dc.Records.
 func (c *technitiumProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, existing models.Records) ([]*models.Correction, int, error) {
-	// Technitium calls DNSControl's ALIAS record type ANAME. Renaming the
-	// desired side here, before diffing, means both sides use the same type
-	// name and diff2 can compare them as the same record; toRecordConfig does
-	// the same on the existing side (see convert.go).
+	// Technitium calls DNSControl's ALIAS record type ANAME, and its APP
+	// pseudo-type is exposed here as TECHNITIUM_APP. Renaming the desired side
+	// here, before diffing, means both sides use the same type name and diff2
+	// can compare them as the same record; toRecordConfig does the same on the
+	// existing side (see convert.go).
 	for _, rec := range dc.Records {
-		if rec.Type == "ALIAS" {
+		switch rec.Type {
+		case "ALIAS":
 			rec.ChangeType("ANAME", dc.Name)
+		case "TECHNITIUM_APP":
+			rec.ChangeType("APP", dc.Name)
 		}
 	}
 
-	instructions, actualChangeCount, err := diff2.ByRecord(existing, dc, nil)
+	instructions, actualChangeCount, err := diff2.ByRecord(existing, dc, compareAppMetadata)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -107,4 +111,15 @@ func (c *technitiumProvider) GetZoneRecordsCorrections(dc *models.DomainConfig, 
 	}
 
 	return corrections, actualChangeCount, nil
+}
+
+// compareAppMetadata extends diff2's comparison string for APP records with
+// their classPath and recordData, which live in Metadata rather than in any
+// field ToComparableNoTTL() knows about (APP isn't a real DNS type, so it
+// falls back to comparing the target - the app name - alone).
+func compareAppMetadata(rc *models.RecordConfig) string {
+	if rc.Type != "APP" {
+		return ""
+	}
+	return fmt.Sprintf("classPath=%s recordData=%s", rc.Metadata["classPath"], rc.Metadata["recordData"])
 }

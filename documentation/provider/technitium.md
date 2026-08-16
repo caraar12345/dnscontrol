@@ -108,6 +108,7 @@ which needs a non-expiring API token.
 | SRV    | Service record |
 | SSHFP  | SSH fingerprint record |
 | SVCB   | Service binding record |
+| [`TECHNITIUM_APP`](../language-reference/domain-modifiers/TECHNITIUM_APP.md) | Hands the query off to an installed DNS app, such as Split Horizon. Technitium calls this record type `APP`. |
 | TLSA   | TLSA record |
 | TXT    | Text record |
 
@@ -144,6 +145,18 @@ the fact that the value is auto-computed. DNSControl cannot tell that address
 apart from a manually set one, so a config asking for the automatic hint would
 never converge; `dnscontrol check` rejects `ipv4hint=auto` and
 `ipv6hint=auto` up front instead.
+
+### APP records
+
+Technitium's proprietary `APP` record type hands a query off to an installed
+[DNS app](https://blog.technitium.com/2021/03/creating-and-running-dns-apps-on.html)
+(for example, the Split Horizon app included with Technitium) instead of
+answering it directly. It has no equivalent in DNSControl's record types, so
+it's exposed as the provider-specific
+[`TECHNITIUM_APP`](../language-reference/domain-modifiers/TECHNITIUM_APP.md)
+pseudo-type. Only one `APP` record can exist at a label, and Technitium does
+not check it against any `A`/`AAAA` records also present there - those take
+precedence, so remove them if the app is meant to answer the query.
 
 ### Concurrent operations
 

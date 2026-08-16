@@ -16,8 +16,9 @@ func AuditRecords(records []*models.RecordConfig) []error {
 
 	a.TypesSupported([]string{
 		"A", "AAAA", "ALIAS", "CAA", "CNAME", "DNAME", "DS", "HTTPS",
-		"MX", "NAPTR", "NS", "PTR", "SRV", "SSHFP", "SVCB", "TLSA", "TXT",
-	}) // Last verified 2026-08-08.
+		"MX", "NAPTR", "NS", "PTR", "SRV", "SSHFP", "SVCB", "TECHNITIUM_APP",
+		"TLSA", "TXT",
+	}) // Last verified 2026-08-16.
 
 	a.Add("TXT", rejectif.TxtIsEmpty) // Last verified 2026-08-08.
 
